@@ -1,0 +1,19 @@
+# environment configuration
+settings:
+  docker:
+    required_integrations:
+      - sklearn
+    requirements:
+      - pyarrow
+
+# configuration of the Model Control Plane
+model_version:
+  name: Fraud_Detection_Regressor
+  version: rf
+  license: Apache 2.0
+  description: Fraud Detection Regressor
+  tags: [ "fraud_detection", "regressor" ]
+
+parameters:
+  random_state: 1
+  target: "Class"

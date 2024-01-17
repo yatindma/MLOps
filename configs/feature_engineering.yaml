@@ -1,0 +1,15 @@
+# environment configuration
+settings:
+  docker:
+    required_integrations:
+      - sklearn
+    requirements:
+      - pyarrow
+
+# pipeline configuration
+test_size: 0.40
+drop_na: True
+drop_duplicates: True
+drop_columns: [ "id" ]
+target: "Class"
+random_state: 42
