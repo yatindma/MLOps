@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.base import RegressorMixin
 from sklearn.ensemble import RandomForestRegressor
 from typing_extensions import Annotated
-from zenml import ArtifactConfig, step, get_step_context
+from zenml import ArtifactConfig, step, get_step_context, log_artifact_metadata
 from zenml.logger import get_logger
 import mlflow
 
@@ -16,8 +16,9 @@ def trainer(
         train_df: pd.DataFrame,
         model_type: str = "RandomForestRegressor",
         target: Optional[str] = "target",
-) -> Annotated[
-    RegressorMixin, ArtifactConfig(name="sklearn_regressor", is_model_artifact=True)
+) -> tuple[
+    Annotated[RegressorMixin, "trained_model"],
+    Annotated[float, "training_acc"],
 ]:
     """
     Train a machine learning model based on the given training data.
@@ -44,6 +45,6 @@ def trainer(
 
     # get model accuracy
     accuracy = model.score(features, target_data)
-    model_version = get_step_context().model_version
-    model_version.log_metadata({"accuracy": accuracy})
-    return model
+
+    mlflow.log_metric("accuracy", accuracy)
+    return model, accuracy

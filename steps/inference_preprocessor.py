@@ -1,32 +1,17 @@
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from typing_extensions import Annotated
 from zenml import step
+from zenml.logger import get_logger
 
-
+logger = get_logger(__name__)
 @step
-def inference_preprocessor(
-        dataset_inf: pd.DataFrame,
-        preprocess_pipeline: Pipeline,
-        target: str,
-) -> Annotated[pd.DataFrame, "inference_dataset"]:
-    """Data preprocessor step.
-
-    This is an example of a data processor step that prepares the data so that
-    it is suitable for model inference. It takes in a dataset as an input step
-    artifact and performs any necessary preprocessing steps based on pretrained
-    preprocessing pipeline.
-
-    Args:
-        dataset_inf: The inference dataset.
-        preprocess_pipeline: Pretrained `Pipeline` to process dataset.
-        target: Name of target columns in dataset.
-
-    Returns:
-        The processed dataframe: dataset_inf.
-    """
-    # artificially adding `target` column to avoid Pipeline issues
-    dataset_inf[target] = pd.Series([1] * dataset_inf.shape[0])
-    dataset_inf = preprocess_pipeline.transform(dataset_inf)
-    dataset_inf.drop(columns=[target], inplace=True)
-    return dataset_inf
+def inference_preprocessor(dataset_inf: pd.DataFrame, preprocess_pipeline: Pipeline, target: str) -> pd.DataFrame:
+    logger.info("Preprocessing inference dataset...")
+    try:
+        dataset_inf[target] = [0] * len(dataset_inf)
+        processed_inf = preprocess_pipeline.transform(dataset_inf)
+        processed_inf.drop(columns=[target], inplace=True)
+        return processed_inf
+    except Exception as e:
+        logger.error(f"Error during inference preprocessing: {e}", exc_info=True)
+        raise

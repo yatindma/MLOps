@@ -16,19 +16,14 @@ def model_promoter(accuracy: float, stage: str = "production") -> bool:
     Returns:
         bool: True if the model is promoted, False otherwise.
     """
-
-    client = Client()
-    best_model_version = client.get_model_version(...)  # Retrieve the best model version from the model registry
-    best_model_accuracy = best_model_version.metadata['accuracy']
-
-
-
     promotion_threshold = 0.8
-    if accuracy < best_model_accuracy and accuracy < promotion_threshold:
+    if accuracy < promotion_threshold:
         logger.info(f"Model not promoted due to lower accuracy: {accuracy:.2f}")
         return False
-
-    current_model_version = get_step_context().model_version
-    current_model_version.set_stage(stage, force=True)
+    try:
+        current_model_version = get_step_context().model_version
+        current_model_version.set_stage(stage, force=True)
+    except Exception as e:
+        logger.error("Failed to get previous model version", exc_info=True)
     logger.info(f"Model promoted with accuracy: {accuracy:.2f}")
     return True
